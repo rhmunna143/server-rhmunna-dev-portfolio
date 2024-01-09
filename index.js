@@ -35,7 +35,7 @@ async function run() {
         // Send a ping to confirm a successful connection
         // await client.db("admin").command({ ping: 1 });
 
-        const db = client.db('yourDatabaseName');
+        const db = client.db('MunnaDeveloperPortfolio');
         const projectCollection = db.collection('projectCollection');
         const blogCollection = db.collection('blogCollection');
 
@@ -103,6 +103,71 @@ async function run() {
         });
 
         // Other CRUD operations for blogCollection can be similarly implemented
+
+        // blog related
+
+        // Create a new blog post
+        app.post('/blogs', async (req, res) => {
+            try {
+                const result = await blogCollection.insertOne(req.body);
+                res.json(result.ops[0]);
+            } catch (err) {
+                res.status(500).json({ message: err.message });
+            }
+        });
+
+        // Get all blog posts
+        app.get('/blogs', async (req, res) => {
+            try {
+                const blogs = await blogCollection.find().toArray();
+                res.json(blogs);
+            } catch (err) {
+                res.status(500).json({ message: err.message });
+            }
+        });
+
+        // Get a single blog post by ID
+        app.get('/blogs/:id', async (req, res) => {
+            try {
+                const blog = await blogCollection.findOne({ _id: ObjectId(req.params.id) });
+                if (!blog) {
+                    return res.status(404).json({ message: 'Blog post not found' });
+                }
+                res.json(blog);
+            } catch (err) {
+                res.status(500).json({ message: err.message });
+            }
+        });
+
+        // Update a blog post by ID
+        app.put('/blogs/:id', async (req, res) => {
+            try {
+                const updatedBlog = await blogCollection.findOneAndUpdate(
+                    { _id: ObjectId(req.params.id) },
+                    { $set: req.body },
+                    { returnOriginal: false }
+                );
+                if (!updatedBlog.value) {
+                    return res.status(404).json({ message: 'Blog post not found' });
+                }
+                res.json(updatedBlog.value);
+            } catch (err) {
+                res.status(500).json({ message: err.message });
+            }
+        });
+
+        // Delete a blog post by ID
+        app.delete('/blogs/:id', async (req, res) => {
+            try {
+                const result = await blogCollection.deleteOne({ _id: ObjectId(req.params.id) });
+                if (result.deletedCount === 0) {
+                    return res.status(404).json({ message: 'Blog post not found' });
+                }
+                res.json({ message: 'Blog post deleted successfully' });
+            } catch (err) {
+                res.status(500).json({ message: err.message });
+            }
+        });
 
 
 
